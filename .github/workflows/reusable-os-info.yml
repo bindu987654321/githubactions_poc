@@ -1,28 +1,32 @@
-name: 📦 Reusable OS Info Workflow (Downstream)
+name: 📦 Reusable Aggregate Workflow (Downstream)
 
 on:
   workflow_call:
     inputs:
-      artifact_name:
-        required: true
-        type: string
-      file_name:
+      artifacts:
         required: true
         type: string
 
 jobs:
-  download-and-display:
+  aggregate:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download Artifact from Upstream
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ inputs.artifact_name }}
-
-      - name: Display OS Info
+      - name: Download All Artifacts
         run: |
-          echo "Displaying contents of ${{ inputs.file_name }}:"
-          cat ${{ inputs.file_name }}
+          echo "Downloading artifacts..."
+          for artifact_name in ${{ inputs.artifacts }}; do
+            echo "Downloading $artifact_name"
+            gh run download-artifact "$artifact_name" --dir ./artifacts
+          done
+
+      - name: Display All OS Info
+        run: |
+          echo "========== Aggregated OS Information =========="
+          for file in $(find ./artifacts -type f -name "*.txt"); do
+            echo "--- $file ---"
+            cat "$file"
+            echo
+          done
