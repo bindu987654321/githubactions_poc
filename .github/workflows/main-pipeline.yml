@@ -1,4 +1,4 @@
-name: 🧠 Main Pipeline (Multi-OS Upstream)
+name: Main Pipeline (Multi-OS Upstream)
 
 on:
   push:
