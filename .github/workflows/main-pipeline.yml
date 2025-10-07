@@ -1,4 +1,4 @@
-name:  Main Pipeline (Multi-OS Upstream)
+name: 🧠 Main Pipeline (Multi-OS Upstream)
 
 on:
   push:
@@ -33,12 +33,26 @@ jobs:
           name: os-info-${{ matrix.os }}
           path: os_info.txt
 
-  call-reusable-workflow:
-    name: Trigger Downstream Aggregator (Reusable Workflow)
+  aggregate:
+    name: Aggregate OS Info (Downstream)
     needs: os-info
-    uses: ./.github/workflows/reusable-aggregate.yml
-    with:
-      artifacts: |
-        os-info-ubuntu-latest
-        os-info-windows-latest
-        os-info-macos-latest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all OS artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+
+      - name: Display all OS files
+        run: |
+          echo "========== Aggregated OS Information =========="
+          ls -R ./artifacts
+          echo
+          for file in $(find ./artifacts -type f -name "*.txt"); do
+            echo "--- $file ---"
+            cat "$file"
+            echo
+          done
