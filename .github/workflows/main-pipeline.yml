@@ -1,4 +1,4 @@
-name: 🧠 Main Pipeline (Upstream)
+name: Main Pipeline (Multi-OS Upstream)
 
 on:
   push:
@@ -6,8 +6,11 @@ on:
 
 jobs:
   os-info:
-    name: Collect OS Information
-    runs-on: ubuntu-latest
+    name: Collect OS Information on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
       - name: Checkout code
@@ -16,16 +19,18 @@ jobs:
       - name: Get OS Information
         run: |
           echo "Collecting system information..."
-          echo "OS Name: $(uname -s)" >> os_info.txt
-          echo "OS Version: $(uname -r)" >> os_info.txt
-          echo "Architecture: $(uname -m)" >> os_info.txt
-          echo "User: $USER" >> os_info.txt
+          echo "OS Name: $(uname -s 2>/dev/null || echo $env:OS)" >> os_info.txt
+          echo "OS Version: $(uname -r 2>/dev/null || systeminfo | findstr /B /C:'OS Version')" >> os_info.txt
+          echo "Architecture: $(uname -m 2>/dev/null || echo $env:PROCESSOR_ARCHITECTURE)" >> os_info.txt
+          echo "User: $(whoami 2>/dev/null || echo $env:USERNAME)" >> os_info.txt
           echo "Home Directory: $HOME" >> os_info.txt
+
+        shell: bash
 
       - name: Upload OS Info Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: os-info
+          name: os-info-${{ matrix.os }}
           path: os_info.txt
 
   call-reusable-workflow:
@@ -33,5 +38,5 @@ jobs:
     needs: os-info
     uses: ./.github/workflows/reusable-os-info.yml
     with:
-      artifact_name: "os-info"
+      artifact_name: "os-info-ubuntu-latest"
       file_name: "os_info.txt"
