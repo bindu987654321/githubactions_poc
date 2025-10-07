@@ -1,0 +1,28 @@
+name: 📦 Reusable OS Info Workflow (Downstream)
+
+on:
+  workflow_call:
+    inputs:
+      artifact_name:
+        required: true
+        type: string
+      file_name:
+        required: true
+        type: string
+
+jobs:
+  download-and-display:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download Artifact from Upstream
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.artifact_name }}
+
+      - name: Display OS Info
+        run: |
+          echo "Displaying contents of ${{ inputs.file_name }}:"
+          cat ${{ inputs.file_name }}
