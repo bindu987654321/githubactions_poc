@@ -1,0 +1,37 @@
+name: 🧠 Main Pipeline (Upstream)
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  os-info:
+    name: Collect OS Information
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get OS Information
+        run: |
+          echo "Collecting system information..."
+          echo "OS Name: $(uname -s)" >> os_info.txt
+          echo "OS Version: $(uname -r)" >> os_info.txt
+          echo "Architecture: $(uname -m)" >> os_info.txt
+          echo "User: $USER" >> os_info.txt
+          echo "Home Directory: $HOME" >> os_info.txt
+
+      - name: Upload OS Info Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: os-info
+          path: os_info.txt
+
+  call-reusable-workflow:
+    name: Trigger Downstream Reusable Workflow
+    needs: os-info
+    uses: ./.github/workflows/reusable-os-info.yml
+    with:
+      artifact_name: "os-info"
+      file_name: "os_info.txt"
