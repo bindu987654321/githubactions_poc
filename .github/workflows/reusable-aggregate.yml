@@ -2,10 +2,6 @@ name: 📦 Reusable Aggregate Workflow (Downstream)
 
 on:
   workflow_call:
-    inputs:
-      artifacts:
-        required: true
-        type: string
 
 jobs:
   aggregate:
@@ -14,15 +10,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download All Artifacts
-        run: |
-          echo "Downloading artifacts..."
-          for artifact_name in ${{ inputs.artifacts }}; do
-            echo "Downloading $artifact_name"
-            gh run download-artifact "$artifact_name" --dir ./artifacts
-          done
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
 
-      - name: Display All OS Info
+      - name: Display all OS info
         run: |
           echo "========== Aggregated OS Information =========="
           for file in $(find ./artifacts -type f -name "*.txt"); do
