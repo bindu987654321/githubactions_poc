@@ -1,0 +1,25 @@
+name: OS Analyzer (Downstream)
+
+on:
+  workflow_run:
+    workflows: ["OS Detector (Upstream)"]
+    types: [completed]
+
+jobs:
+  analyze:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download OS Info Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: os-artifacts
+
+      - name: Show Downloaded Files
+        run: ls -R os-artifacts
+
+      - name: Display OS Information from Artifacts
+        run: |
+          echo "==================== OS INFO FROM UPSTREAM ===================="
+          find os-artifacts -type f -name "*.txt" -exec echo "-----" \; -exec cat {} \; -exec echo "-----" \;
